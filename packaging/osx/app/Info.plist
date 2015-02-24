@@ -5,11 +5,11 @@
         <key>CFBundleDisplayName</key>
         <string>Datadog Agent</string>
         <key>CFBundleExecutable</key>
-        <string>run.sh</string>
+        <string>gui</string>
         <key>CFBundleIconFile</key>
         <string>Agent.icns</string>
-	<key>CFBundleGetInfoString</key>
-	<string>5.2, Copyright © 2009-2015, Datadog Inc.</string>
+    	<key>CFBundleGetInfoString</key>
+    	<string>5.2, Copyright © 2009-2015, Datadog Inc.</string>
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>CFBundleVersion</key>
@@ -18,5 +18,7 @@
         <string>com.datadoghq.agent</string>
         <key>CFBundleSignature</key>
         <string>????</string>
+        <key>LSUIElement</key>
+        <string>1</string>
     </dict>
 </plist>

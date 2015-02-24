@@ -62,8 +62,6 @@ if get_os() == 'windows':
 
 log = logging.getLogger(__name__)
 
-SHIPPED_IMAGES_FOLDER='/opt/datadog-agent/agent/images'
-
 EXCLUDED_WINDOWS_CHECKS = [
     'btrfs', 'cacti', 'directory', 'docker', 'gearmand',
     'hdfs', 'kafka_consumer', 'marathon', 'mcache',
@@ -147,13 +145,13 @@ class EditorFile(object):
             raise
 
 class DatadogConf(EditorFile):
-    def __init__(self, config_path, config_file):
-        self.config = config_file
+    def __init__(self, config_path):
         EditorFile.__init__(self, config_path, "Agent settings file: datadog.conf")
 
     @property
     def api_key(self):
-        api_key = self.config.get('api_key', None)
+        config = get_config(parse_args=False, cfg_path=self.file_path)
+        api_key = config.get('api_key', None)
         if not api_key or api_key == 'APIKEYHERE':
             return None
         return api_key
@@ -177,6 +175,10 @@ class DatadogConf(EditorFile):
                     agent_manager("restart")
                 else:
                     agent_manager("start")
+            elif not ok:
+                warning_popup("The agent needs an API key to send metrics to Datadog")
+                if agent_status() != AGENT_STOPPED:
+                    agent_manager("stop")
             else:
                 self.check_api_key(editor)
 
@@ -353,9 +355,14 @@ class MainWindow(QSplitter):
         if current_os == 'windows':
             prefix_conf = 'windows_'
         else:
-            add_image_path(SHIPPED_IMAGES_FOLDER)
+            add_image_path(osp.join(os.getcwd(), 'images'))
+            # add datadog-agent in PATH
+            os.environ['PATH'] = "{0}:{1}".format(
+                    osp.join(os.getcwd(), '../MacOS'),
+                    os.environ['PATH']
+                )
 
-        conf = get_config(parse_args=False)
+
         log_conf = get_logging_config()
 
         QSplitter.__init__(self, parent)
@@ -367,7 +374,7 @@ class MainWindow(QSplitter):
         self.connect(self.sysTray, SIGNAL("activated(QSystemTrayIcon::ActivationReason)"), self.__icon_activated)
 
         checks = get_checks()
-        datadog_conf = DatadogConf(get_config_path(), conf)
+        datadog_conf = DatadogConf(get_config_path())
         self.create_logs_files_windows(log_conf, prefix_conf)
 
         listwidget = QListWidget(self)
