@@ -69,9 +69,9 @@ EXCLUDED_WINDOWS_CHECKS = [
     'gunicorn', 'zk', 'ssh_check'
 ]
 
-WINDOWS_ONLY_CHECKS = [
+EXCLUDED_MAC_CHECKS = [
     'win32_event_log', 'windows_service', 'wmi_check',
-    'iis'
+    'iis', 'sqlserver', 'cacti'
 ]
 
 MAIN_WINDOW_TITLE = "Datadog Agent Manager"
@@ -110,7 +110,7 @@ def get_checks():
         if get_os() == 'windows':
             excluded_checks = EXCLUDED_WINDOWS_CHECKS
         else:
-            excluded_checks = WINDOWS_ONLY_CHECKS
+            excluded_checks = EXCLUDED_MAC_CHECKS
         if filename.split('.')[0] in excluded_checks:
             continue
         if ext not in ('.yaml', '.example', '.disabled'):
