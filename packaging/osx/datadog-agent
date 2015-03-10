@@ -129,6 +129,13 @@ case $1 in
         exit $?
         ;;
 
+    # To be used only by Mac com.datadoghq.agent.plist
+    # Run supervisord in foreground
+    plist)
+        echo "Starting $DESC (using supervisord)" "$NAME"
+        $SUPERVISORD_PATH -n -c $SUPERVISOR_CONF_FILE
+        ;;
+
     *)
         echo "Usage: $0 {start|stop|restart|info|status|configcheck|check|jmx}"
         exit 2
