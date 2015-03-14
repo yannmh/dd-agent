@@ -23,6 +23,19 @@ class EtcdTest(AgentCheckTest):
             self.assertMetric('etcd.self.send.appendrequest.count', metric_value=0.0, tags=tags)
 
 
+        # def test_followers(self):
+        #     self.run_check(self.config)
+        #     sleep(1)
+        #     self.run_check(self.config)
+        #     tags = ['url:http://localhost:4001', 'etcd_state:leader']
+        #     self.assertMetric('etcd.follower.counts.fail')
+        #     self.assertMetric('etcd.follower.counts.success')
+        #     self.assertMetric('etcd.follower.latency.avg')
+        #     self.assertMetric('etcd.follower.latency.min')
+        #     self.assertMetric('etcd.follower.latency.max')
+        #     self.assertMetric('etcd.follower.latency.stddev')
+        #     self.assertMetric('etcd.follower.latency.current')
+
         def test_service_checks(self):
             self.run_check(self.config)
 
