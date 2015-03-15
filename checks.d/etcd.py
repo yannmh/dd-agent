@@ -47,8 +47,8 @@ class Etcd(AgentCheck):
 
     LEADER_COUNTS = {
         # Rates
-        'fail': 'etcd.leader.count.fail',
-        'success': 'etcd.leader.count.success',
+        'fail': 'etcd.leader.counts.fail',
+        'success': 'etcd.leader.counts.success',
     }
 
     LEADER_LATENCY = {
@@ -111,25 +111,6 @@ class Etcd(AgentCheck):
 
 
         # Gather leader metrics
-        # {
-        #     "followers": {
-        #         "etcd-node1": {
-        #             "counts": {
-        #                 "fail": 1212,
-        #                 "success": 4163176
-        #                             },
-        #             "latency": {
-        #                 "average": 2.7206299430775007,
-        #                 "current": 1.486487,
-        #                 "maximum": 2018.410279,
-        #                 "minimum": 1.011763,
-        #                 "standardDeviation": 6.246990702203536
-        #                             }
-        #                     },
-        #          "...": {},
-        #     "leader": "etcd-node2"
-        #     }
-
         leader_response = self._get_leader_metrics(url, timeout)
         if leader_response is not None and is_leader and len(leader_response.get("followers", {})) > 0:
             # Get the followers
