@@ -37,6 +37,7 @@ instances:
   - host: HOST,PORT
     username: my_username
     password: my_password
+    # command_timeout: 5 # Optional, timeout for each command run (so for each metric)
     # database: my_database # Optional, defaults to "master"
     tags:
       - optional_tag

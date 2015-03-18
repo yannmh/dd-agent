@@ -47,6 +47,7 @@ class SQLServer(AgentCheck):
 
     SOURCE_TYPE_NAME = 'sql server'
     SERVICE_CHECK_NAME = 'sqlserver.can_connect'
+    DEFAULT_COMMAND_TIMEOUT = 5
 
     METRICS = [
         ('sqlserver.buffer.cache_hit_ratio', 'Buffer cache hit ratio', ''), # RAW_LARGE_FRACTION
@@ -185,19 +186,21 @@ class SQLServer(AgentCheck):
             try:
                 conn_str = self._conn_string(instance)
                 conn = adodbapi.connect(conn_str)
+                conn.CommandTimeout = int(instance.get('command_timeout',
+                                                        self.DEFAULT_COMMAND_TIMEOUT))
                 self.connections[conn_key] = conn
                 self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.OK, tags=service_check_tags)
             except Exception:
                 cx = "%s - %s" % (host, database)
                 message = "Unable to connect to SQL Server for instance %s." % cx
-                self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL, 
+                self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
                     tags=service_check_tags, message=message)
-                
+
                 password = instance.get('password')
                 tracebk = traceback.format_exc()
                 if password is not None:
                     tracebk = tracebk.replace(password, "*" * 6)
-                    
+
                 raise Exception("%s \n %s" \
                     % (message, tracebk))
 
