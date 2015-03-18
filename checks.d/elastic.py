@@ -416,12 +416,12 @@ class ESCheck(AgentCheck):
         if self.cluster_status.get(self.curr_config.url) is None:
             self.cluster_status[self.curr_config.url] = data['status']
             if data['status'] in ["yellow", "red"]:
-                event = self._create_event(data['status'])
+                event = self._create_event(data['status'], tags=self.curr_config.tags)
                 self.event(event)
 
         if data['status'] != self.cluster_status.get(self.curr_config.url):
             self.cluster_status[self.curr_config.url] = data['status']
-            event = self._create_event(data['status'])
+            event = self._create_event(data['status'], tags=self.curr_config.tags)
             self.event(event)
 
         for metric in self.CLUSTER_HEALTH_METRICS:
@@ -459,7 +459,7 @@ class ESCheck(AgentCheck):
     def _metric_not_found(self, metric, path):
         self.log.debug("Metric not found: %s -> %s", path, metric)
 
-    def _create_event(self, status):
+    def _create_event(self, status, tags=None):
         hostname = self.hostname.decode('utf-8')
         if status == "red":
             alert_type = "error"
@@ -483,7 +483,7 @@ class ESCheck(AgentCheck):
                  'msg_title': msg_title,
                  'alert_type': alert_type,
                  'source_type_name': "elasticsearch",
-                 'event_object': hostname
+                 'event_object': hostname,
+                 'tags': tags
             }
-
 
