@@ -13,9 +13,9 @@ AGENTPATH="agent"
 FORWARDERPATH="ddagent"
 DOGSTATSDPATH="dogstatsd"
 AGENTCONF="$DIR/../Resources/datadog.conf"
-SUPERVISOR_PIDFILE="/tmp/datadog-supervisord.pid"
+SUPERVISOR_PIDFILE="/var/run/datadog/datadog-supervisord.pid"
 SUPERVISOR_CONF_FILE="../Resources/supervisor.conf"
-SUPERVISOR_SOCK="/tmp/datadog-supervisor.sock"
+SUPERVISOR_SOCK="/var/run/datadog/datadog-supervisor.sock"
 SUPERVISORCTL_PATH="supervisorctl"
 SUPERVISORD_PATH="supervisord"
 
@@ -37,7 +37,7 @@ check_status() {
         datadog_supervisor_processes=$(echo "$supervisor_processes" |
                                        grep -v dogstatsd |
                                        grep $NAME |
-                                       grep -c RUNNING)
+                                       grep -c -E 'RUNNING|STARTING')
         supervisor_config_programs=$(grep -v dogstatsd "$DIR/$SUPERVISOR_CONF_FILE" |
                                      grep -c '\[program:')
 
