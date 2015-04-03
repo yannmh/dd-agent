@@ -129,6 +129,12 @@ class ESCheck(AgentCheck):
         "elasticsearch.cluster_status": ("gauge", "status", lambda v: {"red":0, "yellow":1, "green":2}.get(v, -1)),
     }
 
+    CLUSTER_PENDING_TASKS = {
+        "elasticsearch.pending_tasks_total": ("gauge", "pending_task_total"),
+        "elasticsearch.pending_tasks_priority_high": ("gauge", "pending_tasks_priority_high"),
+        "elasticsearch.pending_tasks_priority_urgent": ("gauge", "pending_tasks_priority_urgent")
+    }
+
     SOURCE_TYPE_NAME = 'elasticsearch'
 
     def __init__(self, name, init_config, agentConfig, instances=None):
@@ -192,6 +198,11 @@ class ESCheck(AgentCheck):
         health_data = self._get_data(health_url)
         self._process_health_data(health_data)
 
+        # Load the pending_tasks data.
+        pending_tasks_url = urlparse.urljoin(self.curr_config.url, self.PENDING_TASKS_URL)
+        pending_tasks_data = self._get_data(pending_tasks_url)
+        self._process_pending_tasks_data(pending_tasks_data)
+
         # If we're here we did not have any ES conn issues
         self.service_check(
             self.SERVICE_CHECK_CONNECT_NAME,
@@ -224,6 +235,7 @@ class ESCheck(AgentCheck):
             # ES versions 0.90.10 and above
             self.HEALTH_URL = "/_cluster/health?pretty=true"
             self.NODES_URL = "/_nodes?network=true"
+            self.PENDING_TASKS_URL = "/_cluster/pending_tasks?pretty=true"
 
             # For "external" clusters, we want to collect from all nodes.
             if is_external:
@@ -302,6 +314,36 @@ class ESCheck(AgentCheck):
             raise
 
         return resp.json()
+
+    def _process_pending_tasks_data(self, data):
+        try:
+            pending_tasks_total = len(data['tasks'])
+        except Exception:
+            pending_tasks = None
+            pending_tasks_priority_high = None
+            pending_tasks_priority_urgent = None
+
+        else:
+            try:
+                pending_tasks_priority_high = sum([1 for task in data['tasks'] if task['priority'] == 'high'])
+            except Exception:
+                pending_tasks_priority_high = None
+
+            try:
+                pending_tasks_priority_urgent = sum([1 for task in data['tasks'] if task['priority'] == 'urgent'])
+            except Exception:
+                pending_tasks_priority_urgent = None
+
+        node_data = {
+            'pending_task_total': pending_tasks_total,
+            'pending_tasks_priority_high': pending_tasks_priority_high,
+            'pending_tasks_priority_urgent': pending_tasks_priority_urgent
+        }
+
+        for metric in self.CLUSTER_PENDING_TASKS:
+            # metric description
+            desc = self.CLUSTER_PENDING_TASKS[metric]
+            self._process_metric(node_data, metric, *desc, tags=self.curr_config.tags)
 
     def _process_stats_data(self, data):
         is_external = self.curr_config.is_external
@@ -485,5 +527,3 @@ class ESCheck(AgentCheck):
                  'source_type_name': "elasticsearch",
                  'event_object': hostname
             }
-
-
