@@ -2,15 +2,13 @@ import unittest
 from nose.plugins.attrib import attr
 import time
 
-import pymongo
-
 from tests.common import load_check
 
 PORT1 = 37017
 PORT2 = 37018
 MAX_WAIT = 150
 
-@attr(requires='mongo')
+@attr(requires='tokumx')
 class TestTokuMX(unittest.TestCase):
     def testTokuMXCheck(self):
         self.agentConfig = {
