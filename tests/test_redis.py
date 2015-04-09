@@ -235,6 +235,32 @@ class TestRedis(AgentCheckTest):
             'port': port
         }
 
+        db = redis.Redis(port=port, db=14)  # Datadog's test db
+        db.flushdb()
+
+        # Generate some slow commands
+        for i in range(100000):
+            db.lpush(test_key, random.random())
+
+        db.sort(test_key)
+
+        self.assertTrue(db.slowlog_len() > 0)
+
+        self.run_check({"init_config": {}, "instances": [instance]})
+
+        assert self.metrics, "No metrics returned"
+        self.assertMetric("redis.slowlog.micros.max", tags=["command:SORT",
+            "redis_host:localhost", "redis_port:{0}".format(port)])
+
+
+    def test_custom_slowlog(self):
+        port = NOAUTH_PORT
+        test_key = "testkey"
+        instance = {
+            'host': 'localhost',
+            'port': port,
+            'slowlog-max-len': 129
+        }
 
         db = redis.Redis(port=port, db=14)  # Datadog's test db
         db.flushdb()
