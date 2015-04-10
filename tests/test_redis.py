@@ -239,12 +239,12 @@ class TestRedis(AgentCheckTest):
         
         # Tweaking Redis's config to have the test run faster
         old_sl_thresh = db.config_get('slowlog-log-slower-than')['slowlog-log-slower-than']
-        db.config_set('slowlog-log-slower-than', 100)
+        db.config_set('slowlog-log-slower-than', 0)
 
         db.flushdb()
 
         # Generate some slow commands
-        for i in range(1000):
+        for i in range(100):
             db.lpush(test_key, random.random())
 
         db.sort(test_key)
@@ -273,12 +273,12 @@ class TestRedis(AgentCheckTest):
 
         # Tweaking Redis's config to have the test run faster
         old_sl_thresh = db.config_get('slowlog-log-slower-than')['slowlog-log-slower-than']
-        db.config_set('slowlog-log-slower-than', 100)
+        db.config_set('slowlog-log-slower-than', 0)
 
         db.flushdb()
 
         # Generate some slow commands
-        for i in range(1000):
+        for i in range(100):
             db.lpush(test_key, random.random())
 
         db.sort(test_key)
