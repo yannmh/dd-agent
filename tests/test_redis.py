@@ -236,15 +236,22 @@ class TestRedis(AgentCheckTest):
         }
 
         db = redis.Redis(port=port, db=14)  # Datadog's test db
+        
+        # Tweaking Redis's config to have the test run faster
+        old_sl_thresh = db.config_get('slowlog-log-slower-than')['slowlog-log-slower-than']
+        db.config_set('slowlog-log-slower-than', 100)
+
         db.flushdb()
 
         # Generate some slow commands
-        for i in range(100000):
+        for i in range(1000):
             db.lpush(test_key, random.random())
 
         db.sort(test_key)
 
         self.assertTrue(db.slowlog_len() > 0)
+        
+        db.config_set('slowlog-log-slower-than', old_sl_thresh)
 
         self.run_check({"init_config": {}, "instances": [instance]})
 
@@ -263,13 +270,20 @@ class TestRedis(AgentCheckTest):
         }
 
         db = redis.Redis(port=port, db=14)  # Datadog's test db
+
+        # Tweaking Redis's config to have the test run faster
+        old_sl_thresh = db.config_get('slowlog-log-slower-than')['slowlog-log-slower-than']
+        db.config_set('slowlog-log-slower-than', 100)
+
         db.flushdb()
 
         # Generate some slow commands
-        for i in range(100000):
+        for i in range(1000):
             db.lpush(test_key, random.random())
 
         db.sort(test_key)
+
+        db.config_set('slowlog-log-slower-than', old_sl_thresh)
 
         self.assertTrue(db.slowlog_len() > 0)
 
