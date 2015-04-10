@@ -259,7 +259,7 @@ class TestRedis(AgentCheckTest):
         instance = {
             'host': 'localhost',
             'port': port,
-            'slowlog-max-len': 129
+            'slowlog-max-len': 1
         }
 
         db = redis.Redis(port=port, db=14)  # Datadog's test db
@@ -274,10 +274,13 @@ class TestRedis(AgentCheckTest):
         self.assertTrue(db.slowlog_len() > 0)
 
         self.run_check({"init_config": {}, "instances": [instance]})
-
+        
         assert self.metrics, "No metrics returned"
-        self.assertMetric("redis.slowlog.micros.max", tags=["command:SORT",
-            "redis_host:localhost", "redis_port:{0}".format(port)])
+
+        # Let's check that we didn't put more than one slowlog entry in the 
+        # payload, as specified in the above agent configuration
+        self.assertMetric("redis.slowlog.micros.count", tags=["command:SORT",
+            "redis_host:localhost", "redis_port:{0}".format(port)], value=1.0)
 
 
     def _sort_metrics(self, metrics):
