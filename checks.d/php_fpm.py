@@ -56,8 +56,9 @@ class PHPFPMCheck(AgentCheck):
         if ping_url is not None:
             self._process_ping(ping_url, auth, tags, pool)
 
+        # pylint doesn't understand that we are raising this only if it's here
         if status_exception is not None:
-            raise status_exception
+            raise status_exception  # pylint: disable=E0702
 
     def _process_status(self, status_url, auth, tags):
         data = {}
@@ -93,9 +94,7 @@ class PHPFPMCheck(AgentCheck):
         return pool_name
 
     def _process_ping(self, ping_url, auth, tags, pool_name):
-        sc_tags = tags[:]
-        if pool_name is not None:
-            sc_tags.append("pool:{0}".format(pool_name))
+        sc_tags = ["ping_url:{0}".format(ping_url)]
 
         try:
             # TODO: adding the 'full' parameter gets you per-process detailed
